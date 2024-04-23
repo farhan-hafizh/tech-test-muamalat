@@ -25,16 +25,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    public UserDto createUser(UserDto userDto) throws BadRequestException {
         User existingUser = userRepository.findByUsername(userDto.getUsername());
 
         if (existingUser != null) {
-            try {
-                throw new BadRequestException("User with username already exists");
-            } catch (BadRequestException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            throw new BadRequestException("User with username already exists");
         }
 
         userDto.setPassword(passwordHelper.encode(userDto.getPassword()));

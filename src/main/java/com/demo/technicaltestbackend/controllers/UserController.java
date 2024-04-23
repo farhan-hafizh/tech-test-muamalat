@@ -30,17 +30,13 @@ public class UserController {
 
     // Register
     @PostMapping("/register")
-    public ResponseEntity<BasicResponse> register(@RequestBody UserDto userDto) {
+    public ResponseEntity<BasicResponse> register(@RequestBody UserDto userDto) throws BadRequestException {
         log.info("Register");
-        try {
-            UserDto user = userService.createUser(userDto);
-        } catch (BadRequestException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        UserDto user = userService.createUser(userDto);
 
         return ResponseEntity.ok(BasicResponse
                 .builder()
+                .data(user)
                 .message("User successfully created!").build());
 
     }

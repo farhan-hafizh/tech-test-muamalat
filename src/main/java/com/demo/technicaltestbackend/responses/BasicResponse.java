@@ -7,6 +7,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
-public class BasicResponse extends BaseResponse{
+public class BasicResponse extends BaseResponse {
     private String message;
+    private Object data;
 }
