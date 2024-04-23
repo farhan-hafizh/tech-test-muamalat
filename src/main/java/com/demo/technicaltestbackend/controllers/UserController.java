@@ -1,22 +1,22 @@
 package com.demo.technicaltestbackend.controllers;
 
 import com.demo.technicaltestbackend.dtos.UserDto;
-import com.demo.technicaltestbackend.responses.BaseResponse;
 import com.demo.technicaltestbackend.responses.BasicResponse;
 import com.demo.technicaltestbackend.responses.TokenResponse;
 import com.demo.technicaltestbackend.services.UserService;
 import com.demo.technicaltestbackend.utils.JwtHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api")
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -30,8 +30,14 @@ public class UserController {
 
     // Register
     @PostMapping("/register")
-    public ResponseEntity<BasicResponse>register(@RequestBody UserDto userDto) {
-        UserDto user = userService.createUser(userDto);
+    public ResponseEntity<BasicResponse> register(@RequestBody UserDto userDto) {
+        log.info("Register");
+        try {
+            UserDto user = userService.createUser(userDto);
+        } catch (BadRequestException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         return ResponseEntity.ok(BasicResponse
                 .builder()

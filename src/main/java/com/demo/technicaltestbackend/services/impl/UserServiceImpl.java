@@ -7,9 +7,10 @@ import com.demo.technicaltestbackend.repositories.UserRepository;
 import com.demo.technicaltestbackend.services.UserService;
 import com.demo.technicaltestbackend.utils.PasswordHelper;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
-
 
 @Service
 @Slf4j
@@ -25,6 +26,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
+        User existingUser = userRepository.findByUsername(userDto.getUsername());
+
+        if (existingUser != null) {
+            try {
+                throw new BadRequestException("User with username already exists");
+            } catch (BadRequestException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
         userDto.setPassword(passwordHelper.encode(userDto.getPassword()));
 
         User newUser = UserMapper.mapToUser(userDto);
