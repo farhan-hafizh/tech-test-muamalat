@@ -7,7 +7,6 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
-public class TokenResponse extends BasicResponse {
-    private String accessToken;
-    private String refreshToken;
+public class DataWithTokenResponse {
+
 }

@@ -1,6 +1,7 @@
 package com.demo.technicaltestbackend.controllers;
 
 import com.demo.technicaltestbackend.dtos.UserDto;
+import com.demo.technicaltestbackend.dtos.UserResponseDto;
 import com.demo.technicaltestbackend.responses.BasicResponse;
 import com.demo.technicaltestbackend.responses.TokenResponse;
 import com.demo.technicaltestbackend.services.AuthenticatedUserService;
@@ -8,12 +9,12 @@ import com.demo.technicaltestbackend.services.UserService;
 import com.demo.technicaltestbackend.utils.AESHelper;
 import com.demo.technicaltestbackend.utils.JwtHelper;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.server.ServerErrorException;
 @RestController
 @RequestMapping("/api")
 @Slf4j
+@CrossOrigin(origins = { "*" })
 public class AuthController {
 
     private final UserService userService;
@@ -42,18 +44,18 @@ public class AuthController {
     public ResponseEntity<BasicResponse> register(@RequestBody UserDto userDto) throws BadRequestException {
         log.info("Register");
         UserDto user = userService.createUser(userDto);
-        user.setPassword(null);
+        UserResponseDto responseDto = new UserResponseDto(user.getUsername());
 
         return ResponseEntity.ok(BasicResponse
                 .builder()
-                .data(user)
+                .data(responseDto)
                 .message("User successfully created!").build());
 
     }
 
     // Login
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody UserDto userDto, HttpServletResponse response) {
+    public ResponseEntity<BasicResponse> login(@RequestBody UserDto userDto, HttpServletResponse response) {
         UserDto loggedInUser = userService.login(userDto.getUsername(), userDto.getPassword());
 
         String accessToken = jwtHelper.generateAccessToken(loggedInUser.getId(), loggedInUser.getUsername());
@@ -72,13 +74,12 @@ public class AuthController {
             throw new ServerErrorException("Something went wrong!", e);
         }
 
-        Cookie cookie = new Cookie("refresh_token", refreshToken);
-        response.addCookie(cookie);
+        UserResponseDto responseDto = new UserResponseDto(loggedInUser.getUsername());
 
         return ResponseEntity.ok(
-                TokenResponse
+                BasicResponse
                         .builder()
-                        .accessToken(accessToken)
+                        .data(TokenResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build())
                         .message("Successfully loggedIn!")
                         .build());
     }

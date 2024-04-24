@@ -63,7 +63,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             logger.info("Invalid Header Value !! ");
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (username != null) {
             AuthenticatedUser userDetails = this.authedUserService.getByUsername(username);
             Boolean validateToken = this.jwtHelper.validateToken(token, true, userDetails);
             if (!validateToken) {
