@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
         log.info("Login requested: {}", username);
         User foundUser = userRepository.findByUsername(username);
 
-        if (!passwordHelper.matches(password, foundUser.getPassword())) {
+        if (foundUser == null || !passwordHelper.matches(password, foundUser.getPassword())) {
             throw new BadCredentialsException("Username or password is wrong!");
         }
 

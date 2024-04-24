@@ -4,14 +4,19 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import com.demo.technicaltestbackend.entities.AuthenticatedUser;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.HashMap;
 
-@Slf4j
 @Component
+@Slf4j
 public class JwtHelper {
     private final String accessTokenSecret;
     private final String refreshTokenSecret;
@@ -37,15 +42,22 @@ public class JwtHelper {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    private String generateJWT(final String secret, final Long id, final Long expires) {
+    private String generateJWT(final String secret, HashMap<String, Object> claims, final Long expires) {
         String token = Jwts.builder()
                 .issuedAt(new Date())
+                .claims().add(claims).and()
                 .expiration(TimeHelper.getExpireDate(expires))
                 .signWith(genereateSigningKey(secret))
                 .compact();
-        log.trace("Token is added to the local cache for userID: {}, ttl: {}", id, expires);
 
         return token;
+    }
+
+    private HashMap<String, Object> genereateClaims(final Long userId, final String username) {
+        HashMap<String, Object> claims = new HashMap<String, Object>();
+        claims.put("user_id", userId);
+        claims.put("username", username);
+        return claims;
     }
 
     private Claims parseJWT(String token, String secret) throws JwtException {
@@ -56,12 +68,31 @@ public class JwtHelper {
                 .getPayload();
     }
 
-    public String generateAccessToken(final Long userId) {
-        return generateJWT(accessTokenSecret, userId, accessTokenExpiresIn);
+    public String generateAccessToken(final Long userId, final String username) {
+        HashMap<String, Object> claims = genereateClaims(userId, username);
+        return generateJWT(accessTokenSecret, claims, accessTokenExpiresIn);
     }
 
-    public String generateRefreshToken(final Long userId) {
-        return generateJWT(refreshTokenSecret, userId, refreshTokenExpiresIn);
+    public String generateRefreshToken(final Long userId, final String username) {
+        HashMap<String, Object> claims = genereateClaims(userId, username);
+
+        return generateJWT(refreshTokenSecret, claims, refreshTokenExpiresIn);
     }
 
+    public HashMap<String, Object> getDataFromToken(String token, Boolean isAccessToken) {
+        final String secret = isAccessToken ? accessTokenSecret : refreshTokenSecret;
+        Claims claimsData = parseJWT(token, secret);
+
+        HashMap<String, Object> expectedMap = new HashMap<>(claimsData);
+        return expectedMap;
+    }
+
+    public Boolean validateToken(String token, Boolean isAccessToken, AuthenticatedUser userDetails) {
+        final HashMap<String, Object> claimData = getDataFromToken(token, isAccessToken);
+        log.info("Validated data: {}", claimData);
+        final String username = claimData.get("username").toString();
+        // final Date expiration = new Date(claimData.get("expiration").toString());
+
+        return (username.equals(userDetails.getUsername()));
+    }
 }

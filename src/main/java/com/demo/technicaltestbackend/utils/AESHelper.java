@@ -16,8 +16,8 @@ public class AESHelper {
         return new SecretKeySpec(keyBytes, ALGORITHM);
     }
 
-    public static String encrypt(String plainText, String secretKey) throws Exception {
-        SecretKeySpec keySpec = generateKey(secretKey);
+    public static String encrypt(String plainText) throws Exception {
+        SecretKeySpec keySpec = generateKey(Constants.ENCRYPTION_SECRET);
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec);
         byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
@@ -25,8 +25,8 @@ public class AESHelper {
         return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
-    public static String decrypt(String encryptedText, String secretKey) throws Exception {
-        SecretKeySpec keySpec = generateKey(secretKey);
+    public static String decrypt(String encryptedText) throws Exception {
+        SecretKeySpec keySpec = generateKey(Constants.ENCRYPTION_SECRET);
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.DECRYPT_MODE, keySpec);
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);

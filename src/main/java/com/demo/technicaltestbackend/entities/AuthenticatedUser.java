@@ -21,6 +21,9 @@ public class AuthenticatedUser {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "refresh_token")
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "refresh_token", length = 500)
     private String refreshToken;
 }
